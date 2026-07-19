@@ -1,4 +1,4 @@
-import { nav, setMessage, apiRequest, saveSession, navigate } from "../app.js";
+import { nav, setMessage, apiRequest, saveSession, navigate, API_BASE_URL } from "../app.js";
 
 export function registerPage() {
   return `
@@ -39,7 +39,14 @@ export function bindRegister() {
       saveSession(data);
       navigate("/onboarding");
     } catch (error) {
-      setMessage(error.message);
+        if (typeof error.message === "string" && error.message.includes("Status=500")) {
+          const healthUrl = `${API_BASE_URL.replace(/\/$/, "")}/health`;
+          setMessage(
+            `Server error (500) from backend. Check Render logs and verify backend health: ${healthUrl}`
+          );
+        } else {
+          setMessage(error.message);
+        }
     }
   });
 }
