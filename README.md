@@ -1,10 +1,28 @@
-# AI Career Path Recommender System
+
+\# AI Career Path Recommender System
 
 Production-ready Django REST + vanilla JavaScript project for recommending student career paths using a Scikit-learn Decision Tree model.
 
 ## Problem Statement
 
 Students in many institutions face difficulties identifying the right career path after completing their studies. Guidance services are either unavailable or too general to cater to individual differences. As a result, students make uninformed career decisions. There is a need for a system that can intelligently analyze a student’s academic interest and personal attributes to provide accurate, personalized recommendations.
+
+## How Recommendation Works
+
+This system uses a machine learning pipeline to predict a suitable career path based on student input:
+
+- Input features: favorite subject, interest area, and skills.
+- Preprocessing: categorical fields are encoded with OneHotEncoder, and the skills list is converted into binary features using a custom `SkillsBinarizer`.
+- Model: a Scikit-learn `DecisionTreeClassifier` is trained on sample career mapping data.
+- Output: the system predicts the most likely career and returns a confidence score plus detailed career guidance.
+
+When a student submits their profile, the backend loads the trained model, transforms the input into the same feature space used for training, and predicts the best career match. The recommendation response includes:
+
+- `predicted_career`
+- `confidence_score`
+- career description
+- required skills
+- learning resources
 
 ## Technology Stack
 

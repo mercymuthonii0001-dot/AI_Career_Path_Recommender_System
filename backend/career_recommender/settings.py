@@ -3,38 +3,45 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret-key")
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv(
-        "ALLOWED_HOSTS",
-        "localhost,127.0.0.1,.onrender.com,testserver",
-    ).split(",")
-    if host.strip()
-]
+def _get_env(name, default=None):
+    value = os.getenv(name, default)
+    if isinstance(value, str) and value.startswith("postgresql://your_"):
+        return default
+    return value
 
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv(
-        "CORS_ALLOWED_ORIGINS",
-        "http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173",
-    ).split(",")
-    if origin.strip()
-]
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv(
-        "CSRF_TRUSTED_ORIGINS",
-        "http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173",
-    ).split(",")
-    if origin.strip()
-]
+def _get_env_list(name, default):
+    return [item.strip() for item in _get_env(name, default).split(",") if item.strip()]
+
+
+SECRET_KEY = _get_env("SECRET_KEY", "dev-only-change-this-secret-key")
+DEBUG = _get_env("DEBUG", "True").lower() == "true"
+
+ALLOWED_HOSTS = _get_env_list(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,.onrender.com,.vercel.app,testserver",
+)
+
+CORS_ALLOWED_ORIGINS = _get_env_list(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173",
+)
+
+CORS_ALLOWED_ORIGIN_REGEXES = _get_env_list(
+    "CORS_ALLOWED_ORIGIN_REGEXES",
+    r"^https://.*\.vercel\.app$",
+)
+
+CSRF_TRUSTED_ORIGINS = _get_env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173",
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -81,16 +88,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "career_recommender.wsgi.application"
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = _get_env("DATABASE_URL")
+DJANGO_USE_SQLITE = _get_env("DJANGO_USE_SQLITE", "True").lower() == "true"
+DB_SSL_REQUIRE = _get_env("DB_SSL_REQUIRE", "True").lower() == "true"
+
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
-            ssl_require=os.getenv("DB_SSL_REQUIRE", "True").lower() == "true",
+            ssl_require=DB_SSL_REQUIRE,
         )
     }
-elif os.getenv("DJANGO_USE_SQLITE", "True").lower() == "true":
+elif DJANGO_USE_SQLITE:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -101,11 +111,11 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("POSTGRES_DB", "ai_career_recommender"),
-            "USER": os.getenv("POSTGRES_USER", "postgres"),
-            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
-            "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-            "PORT": os.getenv("POSTGRES_PORT", "5432"),
+            "NAME": _get_env("POSTGRES_DB", "ai_career_recommender"),
+            "USER": _get_env("POSTGRES_USER", "postgres"),
+            "PASSWORD": _get_env("POSTGRES_PASSWORD", "postgres"),
+            "HOST": _get_env("POSTGRES_HOST", "localhost"),
+            "PORT": _get_env("POSTGRES_PORT", "5432"),
         }
     }
 
