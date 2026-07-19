@@ -25,10 +25,22 @@ def _get_env_list(name, default):
     return [item.strip() for item in default.split(",") if item.strip()]
 
 
+def _get_host_list(name, default):
+    """Return a list of hostnames from an env var without requiring a URL scheme.
+
+    This is used for ALLOWED_HOSTS which expects hostnames (optionally
+    prefixed with a leading dot for subdomains), not full URLs.
+    """
+    raw = os.getenv(name)
+    if raw:
+        return [item.strip() for item in raw.split(",") if item.strip()]
+    return [item.strip() for item in default.split(",") if item.strip()]
+
+
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret-key")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = _get_env_list(
+ALLOWED_HOSTS = _get_host_list(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1,.onrender.com,.vercel.app,testserver",
 )
