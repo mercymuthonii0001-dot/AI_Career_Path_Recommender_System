@@ -31,10 +31,18 @@ def _get_host_list(name, default):
     This is used for ALLOWED_HOSTS which expects hostnames (optionally
     prefixed with a leading dot for subdomains), not full URLs.
     """
+    placeholders = {
+        "your-render-app.onrender.com",
+        "your-backend-app.onrender.com",
+        "your-frontend-app.vercel.app",
+        "your-domain.com",
+    }
     raw = os.getenv(name)
     items = [item.strip() for item in (raw or default).split(",") if item.strip()]
     normalized = []
     for item in items:
+        if item in placeholders:
+            continue
         # If a full URL was provided (e.g. https://example.com), extract the netloc
         try:
             parsed = urlparse(item)
@@ -51,19 +59,15 @@ def _get_host_list(name, default):
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret-key")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
+SESSION_ENGINE = os.getenv("SESSION_ENGINE", "django.contrib.sessions.backends.file")
+SESSION_FILE_PATH = os.getenv("SESSION_FILE_PATH", str(BASE_DIR / "sessions"))
+SESSION_DIR = Path(SESSION_FILE_PATH)
+SESSION_DIR.mkdir(parents=True, exist_ok=True)
+
 ALLOWED_HOSTS = _get_host_list(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,.onrender.com,.vercel.app,testserver",
+    "localhost,127.0.0.1,.onrender.com,.vercel.app,testserver,ai-career-path-recommender-system.onrender.com",
 )
-
-# Emit minimal startup debug info so deploy logs show effective runtime config.
-try:
-    print("[settings] ALLOWED_HOSTS=", ALLOWED_HOSTS, flush=True)
-    print("[settings] CORS_ALLOWED_ORIGINS=", CORS_ALLOWED_ORIGINS, flush=True)
-    print("[settings] CSRF_TRUSTED_ORIGINS=", CSRF_TRUSTED_ORIGINS, flush=True)
-except Exception:
-    # Avoid failing startup due to logging issues
-    pass
 
 CORS_ALLOWED_ORIGINS = _get_env_list(
     "CORS_ALLOWED_ORIGINS",
@@ -79,6 +83,15 @@ CSRF_TRUSTED_ORIGINS = _get_env_list(
     "CSRF_TRUSTED_ORIGINS",
     "http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173",
 )
+
+# Emit minimal startup debug info so deploy logs show effective runtime config.
+try:
+    print("[settings] ALLOWED_HOSTS=", ALLOWED_HOSTS, flush=True)
+    print("[settings] CORS_ALLOWED_ORIGINS=", CORS_ALLOWED_ORIGINS, flush=True)
+    print("[settings] CSRF_TRUSTED_ORIGINS=", CSRF_TRUSTED_ORIGINS, flush=True)
+except Exception:
+    # Avoid failing startup due to logging issues
+    pass
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -126,7 +139,9 @@ TEMPLATES = [
 WSGI_APPLICATION = "career_recommender.wsgi.application"
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL:
+USE_SQLITE_FALLBACK = os.getenv("DJANGO_USE_SQLITE", "True").lower() == "true"
+
+if DATABASE_URL and not USE_SQLITE_FALLBACK:
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
@@ -134,22 +149,11 @@ if DATABASE_URL:
             ssl_require=os.getenv("DB_SSL_REQUIRE", "True").lower() == "true",
         )
     }
-elif os.getenv("DJANGO_USE_SQLITE", "True").lower() == "true":
+else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("POSTGRES_DB", "ai_career_recommender"),
-            "USER": os.getenv("POSTGRES_USER", "postgres"),
-            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
-            "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-            "PORT": os.getenv("POSTGRES_PORT", "5432"),
         }
     }
 
