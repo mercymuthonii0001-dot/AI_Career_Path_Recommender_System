@@ -210,15 +210,33 @@ export async function apiRequest(path, options = {}) {
     headers,
   });
 
+  const contentType = (response.headers.get("content-type") || "").toLowerCase();
   const text = await response.text();
-  const data = text ? JSON.parse(text) : {};
+
+  // If the API unexpectedly returns HTML (for example the frontend index.html),
+  // provide a clearer error to help debug VITE_API_BASE_URL misconfiguration.
+  if (contentType.includes("text/html") || (text && text.trim().startsWith("<"))) {
+    const snippet = text.trim().slice(0, 200).replace(/\s+/g, " ");
+    throw new Error(
+      `Expected JSON from API but received HTML. This usually means the frontend is calling the wrong URL (e.g. VITE_API_BASE_URL not set or points to the frontend). API_BASE_URL=${API_BASE_URL} Status=${response.status} ResponseSnippet=${snippet}`
+    );
+  }
+
+  let data = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      const snippet = text.slice(0, 200).replace(/\s+/g, " ");
+      throw new Error(
+        `Invalid JSON response from API. API_BASE_URL=${API_BASE_URL} Status=${response.status} ResponseSnippet=${snippet}`
+      );
+    }
+  }
 
   if (!response.ok) {
     const message =
-      data.detail ||
-      data.message ||
-      Object.values(data).flat().join(" ") ||
-      "Request failed.";
+      data.detail || data.message || (Array.isArray(data) ? data.join(" ") : Object.values(data || {}).flat().join(" ")) || "Request failed.";
     throw new Error(message);
   }
   return data;
