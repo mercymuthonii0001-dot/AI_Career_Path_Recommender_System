@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: "./build.sh"
-    startCommand: "gunicorn career_recommender.wsgi:application"
+    startCommand: "gunicorn --bind=0.0.0.0:$PORT career_recommender.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
         value: 3.14.3
