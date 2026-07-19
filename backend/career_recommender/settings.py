@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import dj_database_url
 from dotenv import load_dotenv
@@ -9,19 +10,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
-def _get_env(name, default=None):
-    value = os.getenv(name, default)
-    if isinstance(value, str) and value.startswith("postgresql://your_"):
-        return default
-    return value
+def _is_valid_origin(value):
+    parsed = urlparse(value)
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 
 def _get_env_list(name, default):
-    return [item.strip() for item in _get_env(name, default).split(",") if item.strip()]
+    raw = os.getenv(name)
+    if raw:
+        items = [item.strip() for item in raw.split(",") if item.strip()]
+        valid_items = [item for item in items if _is_valid_origin(item)]
+        if valid_items:
+            return valid_items
+    return [item.strip() for item in default.split(",") if item.strip()]
 
 
-SECRET_KEY = _get_env("SECRET_KEY", "dev-only-change-this-secret-key")
-DEBUG = _get_env("DEBUG", "True").lower() == "true"
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret-key")
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = _get_env_list(
     "ALLOWED_HOSTS",
@@ -88,19 +93,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "career_recommender.wsgi.application"
 
-DATABASE_URL = _get_env("DATABASE_URL")
-DJANGO_USE_SQLITE = _get_env("DJANGO_USE_SQLITE", "True").lower() == "true"
-DB_SSL_REQUIRE = _get_env("DB_SSL_REQUIRE", "True").lower() == "true"
-
+DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
-            ssl_require=DB_SSL_REQUIRE,
+            ssl_require=os.getenv("DB_SSL_REQUIRE", "True").lower() == "true",
         )
     }
-elif DJANGO_USE_SQLITE:
+elif os.getenv("DJANGO_USE_SQLITE", "True").lower() == "true":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -111,11 +113,11 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": _get_env("POSTGRES_DB", "ai_career_recommender"),
-            "USER": _get_env("POSTGRES_USER", "postgres"),
-            "PASSWORD": _get_env("POSTGRES_PASSWORD", "postgres"),
-            "HOST": _get_env("POSTGRES_HOST", "localhost"),
-            "PORT": _get_env("POSTGRES_PORT", "5432"),
+            "NAME": os.getenv("POSTGRES_DB", "ai_career_recommender"),
+            "USER": os.getenv("POSTGRES_USER", "postgres"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
+            "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+            "PORT": os.getenv("POSTGRES_PORT", "5432"),
         }
     }
 
