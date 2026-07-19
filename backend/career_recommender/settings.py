@@ -45,6 +45,15 @@ ALLOWED_HOSTS = _get_host_list(
     "localhost,127.0.0.1,.onrender.com,.vercel.app,testserver",
 )
 
+# Emit minimal startup debug info so deploy logs show effective runtime config.
+try:
+    print("[settings] ALLOWED_HOSTS=", ALLOWED_HOSTS, flush=True)
+    print("[settings] CORS_ALLOWED_ORIGINS=", CORS_ALLOWED_ORIGINS, flush=True)
+    print("[settings] CSRF_TRUSTED_ORIGINS=", CSRF_TRUSTED_ORIGINS, flush=True)
+except Exception:
+    # Avoid failing startup due to logging issues
+    pass
+
 CORS_ALLOWED_ORIGINS = _get_env_list(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173",
