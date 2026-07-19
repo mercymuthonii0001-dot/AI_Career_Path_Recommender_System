@@ -157,8 +157,12 @@ export function getOnboardingState() {
       JSON.parse(sessionStorage.getItem(ONBOARDING_STATE_KEY)) || {
         step: 1,
         study_status: "",
+        student_type: "",
+        education_level: "",
         course: "",
         year_of_study: "",
+        career_goal: "",
+        support_note: "",
       }
     );
   } catch {
@@ -179,8 +183,12 @@ export function resetOnboardingState() {
   setOnboardingState({
     step: 1,
     study_status: "",
+    student_type: "",
+    education_level: "",
     course: "",
     year_of_study: "",
+    career_goal: "",
+    support_note: "",
   });
 }
 

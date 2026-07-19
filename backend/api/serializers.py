@@ -108,6 +108,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             "course",
             "year_of_study",
             "study_status",
+            "student_type",
+            "education_level",
+            "career_goal",
+            "support_note",
             "onboarding_completed",
             "created_at",
             "updated_at",
@@ -123,6 +127,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def validate_full_name(self, value):
         return value.strip()
+
+    def validate_career_goal(self, value):
+        return value.strip() if value else ""
+
+    def validate_support_note(self, value):
+        return value.strip() if value else ""
 
     def update(self, instance, validated_data):
         email = validated_data.get("email")

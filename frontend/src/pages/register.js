@@ -6,7 +6,7 @@ export function registerPage() {
     <main class="auth-shell">
       <form class="card form" id="registerForm">
         <h1>Create Account</h1>
-        <p class="muted">Create your account first. Then the system will guide you through your profile setup after login.</p>
+        <p class="muted">Create your account first. Then the system will guide you through a personalized onboarding experience with support for first-time applicants, continuing students, and high school learners.</p>
         <label>Full Name<input required name="full_name" type="text"></label>
         <label>Username<input required name="username" type="text"></label>
         <label>Email<input required name="email" type="email"></label>

@@ -15,12 +15,30 @@ class Profile(models.Model):
         ("continuing", "Continuing student"),
     ]
 
+    STUDENT_TYPE_CHOICES = [
+        ("first_time_applicant", "First-time applicant"),
+        ("continuing_student", "Continuing student"),
+        ("high_school_student", "High school student"),
+    ]
+
+    EDUCATION_LEVEL_CHOICES = [
+        ("high_school", "High school"),
+        ("college", "College"),
+        ("university", "University"),
+        ("vocational", "Vocational / technical"),
+        ("other", "Other"),
+    ]
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=120)
     email = models.EmailField()
     course = models.CharField(max_length=120, blank=True)
     year_of_study = models.CharField(max_length=1, choices=YEAR_CHOICES, blank=True)
     study_status = models.CharField(max_length=20, choices=STUDY_STATUS_CHOICES, blank=True)
+    student_type = models.CharField(max_length=30, choices=STUDENT_TYPE_CHOICES, blank=True)
+    education_level = models.CharField(max_length=20, choices=EDUCATION_LEVEL_CHOICES, blank=True)
+    career_goal = models.CharField(max_length=200, blank=True)
+    support_note = models.TextField(blank=True)
     onboarding_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
