@@ -142,3 +142,9 @@ class CareerListView(generics.ListAPIView):
     def get_queryset(self):
         seed_careers()
         return Career.objects.all()
+
+
+    @api_view(["GET"])
+    @permission_classes([permissions.AllowAny])
+    def health_view(request):
+        return Response({"status": "ok"})

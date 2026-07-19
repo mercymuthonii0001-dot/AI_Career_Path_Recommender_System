@@ -9,6 +9,7 @@ from .views import (
     logout_view,
     profile_view,
     recommend_view,
+    health_view,
 )
 
 urlpatterns = [
@@ -20,4 +21,5 @@ urlpatterns = [
     path("recommend", recommend_view, name="recommend"),
     path("history", RecommendationHistoryView.as_view(), name="history"),
     path("careers", CareerListView.as_view(), name="careers"),
+    path("health", health_view, name="health"),
 ]
