@@ -43,17 +43,21 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response(
-            {
-                "message": "Account created successfully.",
-                "user": {"id": user.id, "username": user.username, "email": user.email},
-                "tokens": _tokens_for_user(user),
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            return Response(
+                {
+                    "message": "Account created successfully.",
+                    "user": {"id": user.id, "username": user.username, "email": user.email},
+                    "tokens": _tokens_for_user(user),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as exc:
+            print("[register error]", type(exc).__name__, str(exc), flush=True)
+            raise
 
 
 @api_view(["POST"])
