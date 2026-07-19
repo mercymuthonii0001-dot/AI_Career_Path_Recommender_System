@@ -144,7 +144,8 @@ class CareerListView(generics.ListAPIView):
         return Career.objects.all()
 
 
-    @api_view(["GET"])
-    @permission_classes([permissions.AllowAny])
-    def health_view(request):
-        return Response({"status": "ok"})
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def health_view(request):
+    return Response({"status": "ok"})
