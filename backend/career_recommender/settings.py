@@ -32,9 +32,20 @@ def _get_host_list(name, default):
     prefixed with a leading dot for subdomains), not full URLs.
     """
     raw = os.getenv(name)
-    if raw:
-        return [item.strip() for item in raw.split(",") if item.strip()]
-    return [item.strip() for item in default.split(",") if item.strip()]
+    items = [item.strip() for item in (raw or default).split(",") if item.strip()]
+    normalized = []
+    for item in items:
+        # If a full URL was provided (e.g. https://example.com), extract the netloc
+        try:
+            parsed = urlparse(item)
+            host = parsed.netloc or item
+        except Exception:
+            host = item
+        # strip any trailing slashes and whitespace
+        host = host.strip().rstrip("/")
+        if host:
+            normalized.append(host)
+    return normalized
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret-key")
