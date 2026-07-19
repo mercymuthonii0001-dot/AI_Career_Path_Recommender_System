@@ -7,7 +7,7 @@ services:
     startCommand: "gunicorn career_recommender.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.4
+        value: 3.14.3
       - key: DEBUG
         value: "False"
       - key: SECRET_KEY
@@ -28,3 +28,7 @@ services:
         value: "True"
       - key: CSRF_COOKIE_SECURE
         value: "True"
+      - key: PIP_DISABLE_PIP_VERSION_CHECK
+        value: "1"
+      - key: PYTHONUNBUFFERED
+        value: "1"
