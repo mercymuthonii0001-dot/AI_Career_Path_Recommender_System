@@ -1,3 +1,5 @@
+import traceback
+
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions, status
@@ -57,6 +59,7 @@ class RegisterView(generics.CreateAPIView):
             )
         except Exception as exc:
             print("[register error]", type(exc).__name__, str(exc), flush=True)
+            traceback.print_exc()
             raise
 
 
