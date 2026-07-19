@@ -217,6 +217,24 @@ POSTGRES_PORT=5432
 
 If you do not set `DATABASE_URL`, Django will use the local PostgreSQL values above.
 
+## Render Deployment
+
+When deploying the backend to Render, do not rely on the repo to update the database connection automatically. `backend/render.yaml` has `DATABASE_URL` set to `sync: false`, which means Render stores the value in the dashboard, not in the repo.
+
+In Render:
+
+1. Open your backend service.
+2. Go to **Environment**.
+3. Find `DATABASE_URL`.
+4. Update it to the current Supabase connection string for your project.
+5. Save and redeploy.
+
+The connection host must match the current Supabase host, for example:
+
+```text
+db.amhjeakyvwjrybmzxcik.supabase.co
+```
+
 ## Supabase Configuration
 
 In Supabase:
