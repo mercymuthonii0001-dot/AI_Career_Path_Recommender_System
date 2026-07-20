@@ -28,45 +28,6 @@ export function bindRegister() {
   const form = document.getElementById("registerForm");
   const usernameInput = form?.querySelector('input[name="username"]');
 
-  const validateUsername = async () => {
-    const username = usernameInput?.value?.toString().trim();
-    if (!username) {
-      setMessage("");
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL.replace(/\/$/, "")}/health`);
-      if (!response.ok) {
-        setMessage("");
-        return;
-      }
-    } catch {
-      setMessage("");
-      return;
-    }
-
-    try {
-      const data = await apiRequest("/register", {
-        method: "POST",
-        body: JSON.stringify({ username, email: "", password: "12345678", full_name: "preview" }),
-      });
-    } catch (error) {
-      if (typeof error.message === "string" && error.message.includes("already exists")) {
-        setMessage("That username is already taken. Please choose another one.");
-        usernameInput.setAttribute("aria-invalid", "true");
-        return;
-      }
-    }
-
-    setMessage("");
-    usernameInput?.removeAttribute("aria-invalid");
-  };
-
-  usernameInput?.addEventListener("input", () => {
-    validateUsername();
-  });
-
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
@@ -76,11 +37,6 @@ export function bindRegister() {
 
     if (!payload.username) {
       setMessage("Please choose a username.");
-      return;
-    }
-
-    if (usernameInput?.getAttribute("aria-invalid") === "true") {
-      setMessage("That username is already taken. Please choose another one.");
       return;
     }
 
