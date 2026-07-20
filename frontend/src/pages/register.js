@@ -28,6 +28,18 @@ export function bindRegister() {
   const form = document.getElementById("registerForm");
   const usernameInput = form?.querySelector('input[name="username"]');
 
+  form?.querySelectorAll(".password-toggle").forEach((button) => {
+    const passwordInput = button.closest(".password-field")?.querySelector("input");
+    if (!passwordInput) return;
+
+    button.addEventListener("click", () => {
+      const isHidden = passwordInput.type === "password";
+      passwordInput.type = isHidden ? "text" : "password";
+      button.textContent = isHidden ? "🙈" : "👁️";
+      button.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+  });
+
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const payload = Object.fromEntries(new FormData(event.currentTarget).entries());

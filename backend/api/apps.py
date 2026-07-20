@@ -7,16 +7,17 @@ def create_default_admin_user(*args, **kwargs):
     User = get_user_model()
     email = "mercymuthonii0001@gmail.com"
     password = "admin123"
+    username = "admin"
 
-    user = User.objects.filter(email__iexact=email).first()
+    user = User.objects.filter(email__iexact=email).first() or User.objects.filter(username__iexact=username).first()
     if user is None:
-        User.objects.create_superuser(username="admin", email=email, password=password)
+        User.objects.create_superuser(username=username, email=email, password=password)
         return
 
     user.is_staff = True
     user.is_superuser = True
     user.email = email
-    user.username = user.username or "admin"
+    user.username = user.username or username
     update_fields = ["is_staff", "is_superuser", "email", "username"]
     if not user.has_usable_password():
         user.set_password(password)
@@ -33,6 +34,7 @@ class ApiConfig(AppConfig):
         from .ml.recommender import CAREER_DETAILS
 
         ensure_model_ready()
+        create_default_admin_user()
 
         def seed_careers(sender, **kwargs):
             from .models import Career

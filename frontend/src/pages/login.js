@@ -23,7 +23,20 @@ export function loginPage() {
 }
 
 export function bindLogin() {
-  document.getElementById("loginForm").addEventListener("submit", async (event) => {
+  const form = document.getElementById("loginForm");
+  form?.querySelectorAll(".password-toggle").forEach((button) => {
+    const passwordInput = button.closest(".password-field")?.querySelector("input");
+    if (!passwordInput) return;
+
+    button.addEventListener("click", () => {
+      const isHidden = passwordInput.type === "password";
+      passwordInput.type = isHidden ? "text" : "password";
+      button.textContent = isHidden ? "🙈" : "👁️";
+      button.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+  });
+
+  form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
     payload.username = payload.username?.toString().trim();
